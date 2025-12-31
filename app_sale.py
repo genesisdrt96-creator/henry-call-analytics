@@ -92,6 +92,50 @@ if uploaded_file is not None:
     st.subheader("🏆 Bảng Xếp Hạng Hiệu Suất & Kỷ Luật")
     st.dataframe(report, use_container_width=True)
 
+    # --- 5.1 VINH DANH CHAMPIONS (TOP 3) ---
+    st.divider()
+    st.subheader("🥇 Vinh danh Champions trong ngày")
+    
+    top_col1, top_col2 = st.columns(2)
+    
+    with top_col1:
+        st.markdown("#### 🔥 Top 3 'Cày' Cuộc Gọi")
+        top_calls = report.nlargest(3, 'Tổng gọi')
+        fig_top_calls = px.bar(
+            top_calls, 
+            x='Tên Nhân Viên', 
+            y='Tổng gọi',
+            text='Tổng gọi',
+            color='Tổng gọi',
+            color_continuous_scale='Blues'
+        )
+        st.plotly_chart(fig_top_calls, use_container_width=True)
+
+    with top_col2:
+        st.markdown("#### 💎 Top 3 'Siêu Cấp' (>10 phút)")
+        top_long_calls = report.nlargest(3, 'Trên 10p')
+        fig_top_long = px.bar(
+            top_long_calls, 
+            x='Tên Nhân Viên', 
+            y='Trên 10p',
+            text='Trên 10p',
+            color='Trên 10p',
+            color_continuous_scale='Reds'
+        )
+        st.plotly_chart(fig_top_long, use_container_width=True)
+
+    # --- 5.2 BIỂU ĐỒ TỔNG THỂ TẤT CẢ NHÂN VIÊN ---
+    st.subheader("📊 So sánh hiệu suất tất cả nhân viên")
+    fig_all = px.bar(
+        report, 
+        x='Tên Nhân Viên', 
+        y=['Bắt máy', 'Trên 5p', 'Trên 10p', 'Trên 30p'],
+        title="Phân lớp chất lượng cuộc gọi theo từng nhân viên",
+        barmode='group',
+        height=500
+    )
+    st.plotly_chart(fig_all, use_container_width=True)
+
     st.divider()
     
     c1, c2 = st.columns(2)
@@ -100,7 +144,6 @@ if uploaded_file is not None:
         hourly_data = df_out.groupby('Hour').size().reset_index(name='Số lượng cuộc gọi')
         fig_hour = px.line(hourly_data, x='Hour', y='Số lượng cuộc gọi', markers=True, title="Lưu lượng cuộc gọi theo giờ")
         st.plotly_chart(fig_hour, use_container_width=True)
-        
 
     with c2:
         st.subheader("🚨 Cảnh báo Chất lượng Data")
@@ -110,7 +153,6 @@ if uploaded_file is not None:
         error_df = df_out['Status_VN'].value_counts().reset_index()
         fig_error = px.pie(error_df, values='count', names='Status_VN', title="Tỷ lệ các loại lỗi")
         st.plotly_chart(fig_error, use_container_width=True)
-        
 
     # --- 6. XUẤT BÁO CÁO ---
     st.divider()

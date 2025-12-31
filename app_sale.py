@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import re
 
 # Cấu hình trang web
 st.set_page_config(page_title="Hệ thống Quản trị Henry Team", layout="wide")
@@ -8,16 +9,33 @@ st.set_page_config(page_title="Hệ thống Quản trị Henry Team", layout="wi
 st.title("🚀 Hệ thống Quản trị Sale & Chất lượng Data")
 st.markdown("---")
 
-# --- 1. HÀM HỖ TRỢ ---
+# --- 1. DỮ LIỆU HỖ TRỢ (Mã vùng -> Tiểu bang) ---
+AC_TO_STATE = {
+    "714": "California", "408": "California", "209": "California", "213": "California", "310": "California",
+    "678": "Georgia", "770": "Georgia", "404": "Georgia", "706": "Georgia",
+    "832": "Texas", "281": "Texas", "713": "Texas", "214": "Texas", "210": "Texas",
+    "407": "Florida", "305": "Florida", "321": "Florida", "813": "Florida",
+    "614": "Ohio", "330": "Ohio", "513": "Ohio",
+    "757": "Virginia", "804": "Virginia",
+    "412": "Pennsylvania", "215": "Pennsylvania",
+    "508": "Massachusetts", "617": "Massachusetts",
+    "205": "Alabama", "334": "Alabama",
+}
+
+def get_state(phone):
+    if pd.isna(phone): return "Unknown"
+    match = re.search(r'\((\d{3})\)', str(phone))
+    if match:
+        ac = match.group(1)
+        return AC_TO_STATE.get(ac, f"Other ({ac})")
+    return "Unknown"
+
 def to_seconds(s):
-    if pd.isna(s) or str(s).lower() == 'in progress' or s == '-':
-        return 0
+    if pd.isna(s) or str(s).lower() == 'in progress' or s == '-': return 0
     try:
         parts = str(s).strip().split(':')
-        if len(parts) == 3:
-            return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
-        elif len(parts) == 2:
-            return int(parts[0]) * 60 + int(parts[1])
+        if len(parts) == 3: return int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+        elif len(parts) == 2: return int(parts[0]) * 60 + int(parts[1])
         return 0
     except: return 0
 
@@ -26,16 +44,13 @@ def translate_desc(desc):
     if "not a valid number" in desc or "disconnected" in desc: return "Data Sai/Số Ảo"
     if "not answered" in desc: return "Khách Không Nghe Máy"
     if "busy" in desc: return "Máy Bận"
-    if "internet connection" in desc or "offline" in desc: return "Lỗi Mạng/Thiết Bị"
     if "accepted" in desc or "connected" in desc: return "Kết Nối Thành Công"
-    if "hung up" in desc: return "Khách Dập Máy Sớm"
     return "Khác/Chưa xác định"
 
 # --- 2. TẢI FILE ---
 uploaded_file = st.file_uploader("📂 Kéo thả file CSV Call Log vào đây", type=["csv"])
 
 if uploaded_file is not None:
-    # --- ĐỌC DỮ LIỆU (Đã sửa lỗi thụt đầu dòng) ---
     try:
         df = pd.read_csv(uploaded_file, sep=',', on_bad_lines='skip', low_memory=False)
     except:
@@ -43,88 +58,87 @@ if uploaded_file is not None:
     
     df = df.drop_duplicates().copy()
     
-    # Xử lý cột Extension & Thời gian
-    # Sử dụng n=1 và expand=True để tách an toàn
+    # Xử lý dữ liệu
     if 'Extension' in df.columns:
         df[['Ext_Num', 'Staff_Name']] = df['Extension'].str.split(' - ', n=1, expand=True)
-        df['Ext_Num'] = df['Ext_Num'].fillna('Unknown')
-        df['Staff_Name'] = df['Staff_Name'].fillna('Unknown Staff')
     
     df['Sec'] = df['Duration'].apply(to_seconds)
     df['Status_VN'] = df['Result Description'].apply(translate_desc)
-    
-    # Lấy giờ gọi (Sửa lỗi format để nhận diện tốt hơn)
     df['Hour'] = pd.to_datetime(df['Time'], errors='coerce').dt.hour
     
-    # Lọc cuộc gọi đi
     df_out = df[df['Direction'] == 'Outgoing'].copy()
+    
+    # Phân tích tiểu bang
+    df_out['State'] = df_out['To'].apply(get_state)
+    state_counts = df_out['State'].value_counts().reset_index()
+    state_counts.columns = ['Tiểu bang', 'Số cuộc gọi']
 
-    # --- 3. TÍNH CHỈ SỐ TỔNG QUAN (METRICS) ---
+    # --- 3. METRICS TỔNG QUAN ---
     total_calls = len(df_out)
-    if total_calls > 0:
-        success_calls = (df_out['Sec'] > 0).sum()
-        hot_calls = (df_out['Sec'] >= 1800).sum()
-        
-        m1, m2, m3 = st.columns(3)
-        m1.metric("📞 Tổng cuộc gọi đi", f"{total_calls} cuộc")
-        m2.metric("✅ Cuộc gọi có kết nối", f"{success_calls} cuộc", f"{round(success_calls/total_calls*100,1)}%")
-        m3.metric("🔥 Cuộc gọi VIP (>30p)", f"{hot_calls} cuộc")
+    success_calls = (df_out['Sec'] > 0).sum()
+    
+    m1, m2, m3 = st.columns(3)
+    m1.metric("📞 Tổng cuộc gọi đi", f"{total_calls}")
+    m2.metric("✅ Kết nối thành công", f"{success_calls}", f"{round(success_calls/total_calls*100,1)}%")
+    m3.metric("🇺🇸 Tiểu bang gọi nhiều nhất", state_counts['Tiểu bang'].iloc[0] if not state_counts.empty else "N/A")
 
-        # --- 4. PHÂN TÍCH THEO NHÂN VIÊN ---
+    st.divider()
+
+    # --- 4. BIỂU ĐỒ TIỂU BANG & TOP NHÂN VIÊN ---
+    col_left, col_right = st.columns([6, 4])
+    with col_left:
+        st.subheader("📍 Thống kê theo Tiểu bang")
+        fig_state = px.bar(state_counts.head(10), x='Tiểu bang', y='Số cuộc gọi', color='Số cuộc gọi', text_auto=True)
+        st.plotly_chart(fig_state, use_container_width=True)
+
+    with col_right:
+        st.subheader("🥇 Top 3 'Cày' Cuộc Gọi")
         def get_stats(group):
-            total = len(group)
-            conn = ((group['Action Result'] == 'Call connected') | (group['Sec'] > 0)).sum()
-            sorted_group = group.sort_values(by=['Date', 'Time'], ascending=True)
-            first_c = sorted_group['Time'].iloc[0]
-            last_c = sorted_group['Time'].iloc[-1]
-            
             return pd.Series({
-                'Tên Nhân Viên': group['Staff_Name'].iloc[0],
-                'Bắt đầu': first_c,
-                'Kết thúc': last_c,
-                'Tổng gọi': total,
-                'Bắt máy': conn,
-                'Tỷ lệ %': round(conn/total*100, 1) if total > 0 else 0,
-                'Trên 5p': (group['Sec'] >= 300).sum(),
-                'Trên 10p': (group['Sec'] >= 600).sum(),
-                'Trên 30p': (group['Sec'] >= 1800).sum(),
-                'Lỗi hay gặp nhất': group['Status_VN'].value_counts().idxmax()
+                'Staff': group['Staff_Name'].iloc[0] if 'Staff_Name' in group.columns else "N/A",
+                'Total': len(group)
             })
+        report_staff = df_out.groupby('Ext_Num').apply(get_stats).reset_index()
+        top3 = report_staff.nlargest(3, 'Total')
+        for i, row in enumerate(top3.itertuples(), 1):
+            st.success(f"Top {i}: **{row.Staff}** ({row.Total} cuộc)")
 
-        report = df_out.groupby('Ext_Num').apply(get_stats, include_groups=False).reset_index()
-        report = report.sort_values('Trên 5p', ascending=False)
+    st.divider()
 
-        # --- 5. HIỂN THỊ CHI TIẾT ---
-        st.subheader("🏆 Bảng Xếp Hạng Hiệu Suất & Kỷ Luật")
-        st.dataframe(report, use_container_width=True)
+    # --- 5. PHÂN TÍCH GIỜ VÀNG & TỶ LỆ CHỐT (>15 PHÚT) ---
+    st.subheader("⏰ Phân tích Khung Giờ Chất Lượng (>15 Phút)")
+    
+    # Tính toán tỷ lệ theo giờ
+    hourly_all = df_out.groupby('Hour').size()
+    hourly_long = df_out[df_out['Sec'] >= 900].groupby('Hour').size()
+    
+    # Kết hợp lại thành DataFrame
+    hourly_stats = pd.DataFrame({'Tổng gọi': hourly_all, 'Trên 15p': hourly_long}).fillna(0)
+    hourly_stats['Tỷ lệ %'] = round((hourly_stats['Trên 15p'] / hourly_stats['Tổng gọi']) * 100, 1)
+    hourly_stats = hourly_stats.reset_index()
 
-        # --- 5.1 VINH DANH CHAMPIONS ---
-        st.divider()
-        st.subheader("🥇 Vinh danh Champions trong tháng")
-        
-        top_col1, top_col2 = st.columns(2)
-        with top_col1:
-            st.markdown("#### 🔥 Top 3 'Cày' Cuộc Gọi")
-            top_calls = report.nlargest(3, 'Tổng gọi')
-            fig_top_calls = px.bar(top_calls, x='Tên Nhân Viên', y='Tổng gọi', text='Tổng gọi',
-                                 color='Tổng gọi', color_continuous_scale='Blues')
-            st.plotly_chart(fig_top_calls, use_container_width=True)
+    # Tìm giờ có tỷ lệ cao nhất
+    if not hourly_stats.empty:
+        best_hour = hourly_stats.loc[hourly_stats['Tỷ lệ %'].idxmax()]
+        st.info(f"💡 **Khám phá:** Khung giờ **{int(best_hour['Hour'])}h** có tỷ lệ cuộc gọi chất lượng cao nhất (**{best_hour['Tỷ lệ %']}%** cuộc gọi kéo dài trên 15 phút).")
 
-        with top_col2:
-            st.markdown("#### 💎 Top 3 'Siêu Cấp' (>10 phút)")
-            top_long_calls = report.nlargest(3, 'Trên 10p')
-            fig_top_long = px.bar(top_long_calls, x='Tên Nhân Viên', y='Trên 10p', text='Trên 10p',
-                                color='Trên 10p', color_continuous_scale='Reds')
-            st.plotly_chart(fig_top_long, use_container_width=True)
+    # Biểu đồ đường kết hợp
+    fig_time = px.line(hourly_stats, x='Hour', y='Tỷ lệ %', markers=True, 
+                       title="Tỷ lệ % cuộc gọi kéo dài >15 phút theo khung giờ",
+                       labels={'Hour': 'Khung giờ (24h)', 'Tỷ lệ %': 'Tỷ lệ cuộc gọi >15p (%)'})
+    fig_time.update_traces(line_color='#FF4B4B', line_width=3)
+    st.plotly_chart(fig_time, use_container_width=True)
 
-        # --- 5.2 BIỂU ĐỒ TỔNG THỂ ---
-        st.subheader("📊 So sánh hiệu suất tất cả nhân viên")
-        fig_all = px.bar(report, x='Tên Nhân Viên', y=['Bắt máy', 'Trên 5p', 'Trên 10p', 'Trên 30p'],
-                        title="Phân lớp chất lượng cuộc gọi theo từng nhân viên", barmode='group', height=500)
-        st.plotly_chart(fig_all, use_container_width=True)
+    st.divider()
 
-        st.divider()
-        c1, c2 = st.columns(2)
-        with c1:
-            st.subheader("⏰ Phân tích Giờ Vàng (Toàn Team)")
-            hourly_data = df_out.groupby('Hour').size().reset_index(name='Số lượng cuộc gọi')
+    # --- 6. SO SÁNH NHÂN VIÊN & XUẤT BÁO CÁO ---
+    st.subheader("📊 Hiệu suất chi tiết toàn bộ Team")
+    report_all = df_out.groupby('Staff_Name').agg(
+        Tổng_gọi=('Direction', 'count'),
+        Trên_15p=('Sec', lambda x: (x >= 900).sum())
+    ).reset_index()
+    
+    st.dataframe(report_all.sort_values('Trên 15p', ascending=False), use_container_width=True)
+    
+    csv = report_all.to_csv(index=False).encode('utf-8-sig')
+    st.download_button("📥 Tải Báo Cáo Tổng Hợp", data=csv, file_name='Bao_Cao_Henry_Team.csv')

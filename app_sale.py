@@ -36,12 +36,12 @@ uploaded_file = st.file_uploader("📂 Kéo thả file CSV Call Log vào đây",
 
 if uploaded_file is not None:
     # Đọc dữ liệu
-try:
-    # Thử đọc với dấu phẩy, tự động bỏ qua dòng lỗi và phát hiện định dạng
-    df = pd.read_csv(uploaded_file, sep=',', on_bad_lines='skip', low_memory=False)
-except:
-    # Nếu lỗi, thử đọc với dấu chấm phẩy (phổ biến ở Excel VN)
-    df = pd.read_csv(uploaded_file, sep=';', on_bad_lines='skip', low_memory=False)
+    try:
+        df = pd.read_csv(uploaded_file, sep=',', on_bad_lines='skip', low_memory=False)
+    except:
+        df = pd.read_csv(uploaded_file, sep=';', on_bad_lines='skip', low_memory=False)
+    
+    # Các dòng code phía dưới (df.drop_duplicates...) phải thẳng hàng với lệnh df ở trên
     df = df.drop_duplicates().copy()
     
     # Xử lý cột Extension & Thời gian

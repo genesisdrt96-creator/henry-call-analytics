@@ -9,23 +9,23 @@ st.set_page_config(page_title="Hệ thống Quản trị Henry Team", layout="wi
 st.title("🚀 Hệ thống Quản trị Sale & Chất lượng Data")
 st.markdown("---")
 
-# --- 1. DỮ LIỆU TỔNG LỰC: MÃ VÙNG 50 TIỂU BANG HOA KỲ ---
-# Danh sách này đã bao gồm đầy đủ các mã vùng chính thức của US
+# --- 1. DANH SÁCH MÃ VÙNG ĐẦY ĐỦ 50 TIỂU BANG HOA KỲ ---
 AC_TO_STATE = {
-    '205': 'AL', '251': 'AL', '256': 'AL', '334': 'AL', '938': 'AL', '907': 'AK', '480': 'AZ', '520': 'AZ', '602': 'AZ', '623': 'AZ', '928': 'AZ', '479': 'AR', '501': 'AR', '870': 'AR', '209': 'CA', '213': 'CA', '310': 'CA', '323': 'CA', '408': 'CA', '415': 'CA', '424': 'CA', '442': 'CA', '510': 'CA', '530': 'CA', '559': 'CA', '562': 'CA', '619': 'CA', '626': 'CA', '628': 'CA', '650': 'CA', '657': 'CA', '661': 'CA', '669': 'CA', '707': 'CA', '714': 'CA', '747': 'CA', '760': 'CA', '805': 'CA', '818': 'CA', '820': 'CA', '831': 'CA', '840': 'CA', '858': 'CA', '909': 'CA', '916': 'CA', '925': 'CA', '949': 'CA', '951': 'CA', '303': 'CO', '719': 'CO', '720': 'CO', '970': 'CO', '203': 'CT', '475': 'CT', '860': 'CT', '959': 'CT', '302': 'DE', '202': 'DC', '239': 'FL', '305': 'FL', '321': 'FL', '352': 'FL', '386': 'FL', '407': 'FL', '561': 'FL', '689': 'FL', '727': 'FL', '754': 'FL', '772': 'FL', '786': 'FL', '813': 'FL', '850': 'FL', '863': 'FL', '904': 'FL', '941': 'FL', '954': 'FL', '229': 'GA', '404': 'GA', '470': 'GA', '478': 'GA', '678': 'GA', '706': 'GA', '762': 'GA', '770': 'GA', '912': 'GA', '808': 'HI', '208': 'ID', '986': 'ID', '217': 'IL', '224': 'IL', '309': 'IL', '312': 'IL', '331': 'IL', '618': 'IL', '630': 'IL', '708': 'IL', '773': 'IL', '779': 'IL', '815': 'IL', '847': 'IL', '872': 'IL', '219': 'IN', '260': 'IN', '317': 'IN', '463': 'IN', '574': 'IN', '765': 'IN', '812': 'IN', '930': 'IN', '319': 'IA', '515': 'IA', '563': 'IA', '641': 'IA', '712': 'IA', '316': 'KS', '620': 'KS', '785': 'KS', '913': 'KS', '270': 'KY', '364': 'KY', '502': 'KY', '606': 'KY', '859': 'KY', '225': 'LA', '318': 'LA', '337': 'LA', '504': 'LA', '985': 'LA', '207': 'ME', '240': 'MD', '301': 'MD', '410': 'MD', '443': 'MD', '667': 'MD', '339': 'MA', '351': 'MA', '413': 'MA', '508': 'MA', '617': 'MA', '774': 'MA', '781': 'MA', '857': 'MA', '978': 'MA', '231': 'MI', '248': 'MI', '269': 'MI', '313': 'MI', '517': 'MI', '586': 'MI', '616': 'MI', '734': 'MI', '810': 'MI', '906': 'MI', '947': 'MI', '989': 'MI', '218': 'MN', '320': 'MN', '507': 'MN', '612': 'MN', '651': 'MN', '763': 'MN', '952': 'MN', '228': 'MS', '601': 'MS', '662': 'MS', '769': 'MS', '314': 'MO', '417': 'MO', '573': 'MO', '636': 'MO', '660': 'MO', '816': 'MO', '406': 'MT', '308': 'NE', '402': 'NE', '531': 'NE', '702': 'NV', '725': 'NV', '775': 'NV', '603': 'NH', '201': 'NJ', '551': 'NJ', '609': 'NJ', '640': 'NJ', '732': 'NJ', '848': 'NJ', '856': 'NJ', '862': 'NJ', '908': 'NJ', '973': 'NJ', '505': 'NM', '575': 'NM', '212': 'NY', '315': 'NY', '332': 'NY', '347': 'NY', '516': 'NY', '518': 'NY', '585': 'NY', '607': 'NY', '631': 'NY', '646': 'NY', '680': 'NY', '716': 'NY', '718': 'NY', '838': 'NY', '845': 'NY', '914': 'NY', '917': 'NY', '929': 'NY', '934': 'NY', '252': 'NC', '336': 'NC', '704': 'NC', '743': 'NC', '828': 'NC', '910': 'NC', '919': 'NC', '980': 'NC', '984': 'NC', '701': 'ND', '216': 'OH', '234': 'OH', '326': 'OH', '330': 'OH', '380': 'OH', '419': 'OH', '440': 'OH', '513': 'OH', '567': 'OH', '614': 'OH', '740': 'OH', '937': 'OH', '405': 'OK', '539': 'OK', '580': 'OK', '918': 'OK', '458': 'OR', '503': 'OR', '541': 'OR', '971': 'OR', '215': 'PA', '223': 'PA', '267': 'PA', '272': 'PA', '412': 'PA', '484': 'PA', '570': 'PA', '610': 'PA', '717': 'PA', '724': 'PA', '814': 'PA', '878': 'PA', '401': 'RI', '803': 'SC', '843': 'SC', '854': 'SC', '864': 'SC', '605': 'SD', '423': 'TN', '615': 'TN', '629': 'TN', '731': 'TN', '865': 'TN', '901': 'TN', '931': 'TN', '210': 'TX', '214': 'TX', '254': 'TX', '281': 'TX', '325': 'TX', '346': 'TX', '361': 'TX', '409': 'TX', '430': 'TX', '432': 'TX', '469': 'TX', '512': 'TX', '682': 'TX', '713': 'TX', '726': 'TX', '737': 'TX', '806': 'TX', '817': 'TX', '830': 'TX', '832': 'TX', '903': 'TX', '915': 'TX', '936': 'TX', '940': 'TX', '945': 'TX', '956': 'TX', '972': 'TX', '979': 'TX', '385': 'UT', '435': 'UT', '801': 'UT', '802': 'VT', '276': 'VA', '434': 'VA', '540': 'VA', '571': 'VA', '703': 'VA', '757': 'VA', '804': 'VA', '948': 'VA', '206': 'WA', '253': 'WA', '360': 'WA', '425': 'WA', '509': 'WA', '564': 'WA', '304': 'WV', '681': 'WV', '262': 'WI', '414': 'WI', '534': 'WI', '608': 'WI', '715': 'WI', '920': 'WI', '307': 'WY'
+    '201': 'NJ', '202': 'DC', '203': 'CT', '205': 'AL', '206': 'WA', '207': 'ME', '208': 'ID', '209': 'CA', '210': 'TX', '212': 'NY', '213': 'CA', '214': 'TX', '215': 'PA', '216': 'OH', '217': 'IL', '218': 'MN', '219': 'IN', '220': 'OH', '223': 'PA', '224': 'IL', '225': 'LA', '226': 'ON', '228': 'MS', '229': 'GA', '231': 'MI', '234': 'OH', '239': 'FL', '240': 'MD', '248': 'MI', '251': 'AL', '252': 'NC', '253': 'WA', '254': 'TX', '256': 'AL', '260': 'IN', '262': 'WI', '267': 'PA', '269': 'MI', '270': 'KY', '272': 'PA', '276': 'VA', '281': 'TX', '301': 'MD', '302': 'DE', '303': 'CO', '304': 'WV', '305': 'FL', '307': 'WY', '308': 'NE', '309': 'IL', '310': 'CA', '312': 'IL', '313': 'MI', '314': 'MO', '315': 'NY', '316': 'KS', '317': 'IN', '318': 'LA', '319': 'IA', '320': 'MN', '321': 'FL', '323': 'CA', '325': 'TX', '326': 'OH', '330': 'OH', '331': 'IL', '332': 'NY', '334': 'AL', '336': 'NC', '337': 'LA', '339': 'MA', '341': 'CA', '346': 'TX', '347': 'NY', '351': 'MA', '352': 'FL', '360': 'WA', '361': 'TX', '364': 'KY', '380': 'OH', '385': 'UT', '386': 'FL', '401': 'RI', '402': 'NE', '404': 'GA', '405': 'OK', '406': 'MT', '407': 'FL', '408': 'CA', '409': 'TX', '410': 'MD', '412': 'PA', '413': 'MA', '414': 'WI', '415': 'CA', '417': 'MO', '419': 'OH', '423': 'TN', '424': 'CA', '425': 'WA', '428': 'OH', '430': 'TX', '432': 'TX', '434': 'VA', '435': 'UT', '440': 'OH', '442': 'CA', '443': 'MD', '445': 'PA', '447': 'IL', '458': 'OR', '463': 'IN', '469': 'TX', '470': 'GA', '475': 'CT', '478': 'GA', '479': 'AR', '480': 'AZ', '484': 'PA', '501': 'AR', '502': 'KY', '503': 'OR', '504': 'LA', '505': 'NM', '507': 'MN', '508': 'MA', '509': 'WA', '510': 'CA', '512': 'TX', '513': 'OH', '515': 'IA', '516': 'NY', '517': 'MI', '518': 'NY', '520': 'AZ', '530': 'CA', '531': 'NE', '534': 'WI', '539': 'OK', '540': 'VA', '541': 'OR', '551': 'NJ', '559': 'CA', '561': 'FL', '562': 'CA', '563': 'IA', '564': 'WA', '567': 'OH', '570': 'PA', '571': 'VA', '573': 'MO', '574': 'IN', '575': 'NM', '580': 'OK', '585': 'NY', '586': 'MI', '601': 'MS', '602': 'AZ', '603': 'NH', '605': 'SD', '606': 'KY', '607': 'NY', '608': 'WI', '609': 'NJ', '610': 'PA', '612': 'MN', '614': 'OH', '615': 'TN', '616': 'MI', '617': 'MA', '618': 'IL', '619': 'CA', '620': 'KS', '623': 'AZ', '626': 'CA', '628': 'CA', '629': 'TN', '630': 'IL', '631': 'NY', '633': 'MO', '636': 'MO', '640': 'NJ', '641': 'IA', '646': 'NY', '650': 'CA', '651': 'MN', '656': 'FL', '657': 'CA', '660': 'MO', '661': 'CA', '662': 'MS', '667': 'MD', '669': 'CA', '678': 'GA', '679': 'MI', '680': 'NY', '681': 'WV', '682': 'TX', '686': 'VA', '689': 'FL', '701': 'ND', '702': 'NV', '703': 'VA', '704': 'NC', '706': 'GA', '707': 'CA', '708': 'IL', '712': 'IA', '713': 'TX', '714': 'CA', '715': 'WI', '716': 'NY', '717': 'PA', '718': 'NY', '719': 'CO', '720': 'CO', '724': 'PA', '725': 'NV', '726': 'TX', '727': 'FL', '731': 'TN', '732': 'NJ', '734': 'MI', '737': 'TX', '740': 'OH', '743': 'NC', '747': 'CA', '754': 'FL', '757': 'VA', '760': 'CA', '762': 'GA', '763': 'MN', '765': 'IN', '769': 'MS', '770': 'GA', '772': 'FL', '773': 'IL', '774': 'MA', '775': 'NV', '779': 'IL', '781': 'MA', '785': 'KS', '786': 'FL', '787': 'PR', '801': 'UT', '802': 'VT', '803': 'SC', '804': 'VA', '805': 'CA', '806': 'TX', '808': 'HI', '810': 'MI', '812': 'IN', '813': 'FL', '814': 'PA', '815': 'IL', '816': 'MO', '817': 'TX', '818': 'CA', '820': 'CA', '828': 'NC', '830': 'TX', '831': 'CA', '832': 'TX', '838': 'NY', '840': 'CA', '843': 'SC', '845': 'NY', '847': 'IL', '848': 'NJ', '850': 'FL', '854': 'SC', '856': 'NJ', '857': 'MA', '858': 'CA', '859': 'KY', '860': 'CT', '862': 'NJ', '863': 'FL', '864': 'SC', '865': 'TN', '870': 'AR', '872': 'IL', '878': 'PA', '901': 'TN', '903': 'TX', '904': 'FL', '906': 'MI', '907': 'AK', '908': 'NJ', '909': 'CA', '910': 'NC', '912': 'GA', '913': 'KS', '914': 'NY', '915': 'TX', '916': 'CA', '917': 'NY', '918': 'OK', '919': 'NC', '920': 'WI', '925': 'CA', '928': 'AZ', '929': 'NY', '930': 'IN', '931': 'TN', '934': 'NY', '936': 'TX', '937': 'OH', '938': 'AL', '940': 'TX', '941': 'FL', '945': 'TX', '947': 'MI', '948': 'VA', '949': 'CA', '951': 'CA', '952': 'MN', '954': 'FL', '956': 'TX', '959': 'CT', '970': 'CO', '971': 'OR', '972': 'TX', '973': 'NJ', '978': 'MA', '979': 'TX', '980': 'NC', '984': 'NC', '985': 'LA', '986': 'ID', '989': 'MI'
 }
 
+# --- 2. HÀM HỖ TRỢ ---
 def get_state(phone):
     if pd.isna(phone): return "Không xác định"
+    # Tìm mã vùng trong ngoặc (714) hoặc đầu số 10 chữ số
     match = re.search(r'\((\d{3})\)', str(phone))
     if match:
         ac = match.group(1)
-        # Nếu không tìm thấy trong danh sách 50 bang, trả về Toll-free hoặc Other
+        # Các đầu số Toll-Free không thuộc bang nào
         if ac in ['800', '888', '877', '866', '855', '844', '833']: return "Toll-Free"
         return AC_TO_STATE.get(ac, f"Khác ({ac})")
     return "Không xác định"
 
-# (Phần hàm to_seconds và translate_desc giữ nguyên như cũ...)
 def to_seconds(s):
     if pd.isna(s) or str(s).lower() == 'in progress' or s == '-': return 0
     try:
@@ -35,15 +35,7 @@ def to_seconds(s):
         return 0
     except: return 0
 
-def translate_desc(desc):
-    desc = str(desc).lower()
-    if "not a valid number" in desc or "disconnected" in desc: return "Data Sai/Số Ảo"
-    if "not answered" in desc: return "Khách Không Nghe Máy"
-    if "busy" in desc: return "Máy Bận"
-    if "accepted" in desc or "connected" in desc: return "Kết Nối Thành Công"
-    return "Khác/Chưa xác định"
-
-# --- 2. TẢI FILE ---
+# --- 3. TẢI VÀ XỬ LÝ FILE ---
 uploaded_file = st.file_uploader("📂 Kéo thả file CSV Call Log vào đây", type=["csv"])
 
 if uploaded_file is not None:
@@ -54,71 +46,85 @@ if uploaded_file is not None:
     
     df = df.drop_duplicates().copy()
     
-    # Xử lý dữ liệu
+    # Xử lý Tên nhân viên
     if 'Extension' in df.columns:
         df[['Ext_Num', 'Staff_Name']] = df['Extension'].str.split(' - ', n=1, expand=True)
+        df['Staff_Name'] = df['Staff_Name'].fillna('Unknown Staff')
     
     df['Sec'] = df['Duration'].apply(to_seconds)
+    # Tự động nhận diện giờ
     df['Hour'] = pd.to_datetime(df['Time'], errors='coerce').dt.hour
     
+    # Lọc cuộc gọi đi
     df_out = df[df['Direction'] == 'Outgoing'].copy()
     df_out['State'] = df_out['To'].apply(get_state)
 
-    # --- 3. METRICS TỔNG QUAN ---
+    # --- 4. HIỂN THỊ METRICS TỔNG QUAN ---
     state_counts = df_out['State'].value_counts().reset_index()
     state_counts.columns = ['Tiểu bang', 'Số cuộc gọi']
     
     m1, m2, m3 = st.columns(3)
     m1.metric("📞 Tổng cuộc gọi đi", f"{len(df_out)}")
-    m2.metric("✅ Kết nối thành công", f"{(df_out['Sec'] > 0).sum()}")
-    m3.metric("🇺🇸 Bang gọi nhiều nhất", state_counts['Tiểu bang'].iloc[0] if not state_counts.empty else "N/A")
+    m2.metric("✅ Kết nối (có thời lượng)", f"{(df_out['Sec'] > 0).sum()}")
+    m3.metric("🇺🇸 Bang được gọi nhiều nhất", state_counts['Tiểu bang'].iloc[0] if not state_counts.empty else "N/A")
 
     st.divider()
 
-    # --- 4. BIỂU ĐỒ TIỂU BANG (HIỂN THỊ ĐỦ 50 BANG NẾU CÓ DỮ LIỆU) ---
-    st.subheader("📍 Thống kê chi tiết theo Tiểu bang (USA)")
-    # Chỉ lấy top các bang có cuộc gọi để biểu đồ không bị quá dày
-    fig_state = px.bar(state_counts.head(50), x='Tiểu bang', y='Số cuộc gọi', 
-                       color='Số cuộc gọi', text_auto=True,
-                       title="Xếp hạng lưu lượng cuộc gọi theo địa phương",
-                       color_continuous_scale='Portland')
-    st.plotly_chart(fig_state, use_container_width=True)
+    # --- 5. BIỂU ĐỒ TIỂU BANG & TOP NHÂN VIÊN ---
+    col1, col2 = st.columns([6, 4])
+    with col1:
+        st.subheader("📍 Thống kê 50 Tiểu bang USA (Đầy đủ mã vùng)")
+        # Lấy top 50 bang có dữ liệu để vẽ
+        fig_state = px.bar(state_counts.head(50), x='Tiểu bang', y='Số cuộc gọi', 
+                           color='Số cuộc gọi', text_auto=True, color_continuous_scale='Portland')
+        st.plotly_chart(fig_state, use_container_width=True)
+
+    with col2:
+        st.subheader("🏆 Vinh danh Top 3 Champion")
+        report_top = df_out.groupby('Staff_Name').size().reset_index(name='Count')
+        top3 = report_top.nlargest(3, 'Count')
+        for i, row in enumerate(top3.itertuples(), 1):
+            st.success(f"Top {i}: **{row.Staff_Name}** với **{row.Count}** cuộc")
 
     st.divider()
 
-    # --- 5. PHÂN TÍCH GIỜ VÀNG & TỶ LỆ CHỐT (>15 PHÚT) ---
-    st.subheader("⏰ Phân tích Khung Giờ Chất Lượng (>15 Phút)")
+    # --- 6. PHÂN TÍCH TỶ LỆ >15 PHÚT THEO GIỜ ---
+    st.subheader("⏰ Phân tích khung giờ vàng (Tỷ lệ cuộc gọi >15 phút)")
     
     hourly_all = df_out.groupby('Hour').size()
     hourly_long = df_out[df_out['Sec'] >= 900].groupby('Hour').size()
     
-    hourly_stats = pd.DataFrame({'Tổng': hourly_all, 'Trên 15p': hourly_long}).fillna(0)
-    hourly_stats['Tỷ lệ %'] = round((hourly_stats['Trên 15p'] / hourly_stats['Tổng']) * 100, 1)
+    hourly_stats = pd.DataFrame({'Tổng': hourly_all, 'Tren15p': hourly_long}).fillna(0)
+    hourly_stats['Tỷ lệ %'] = round((hourly_stats['Tren15p'] / hourly_stats['Tổng']) * 100, 1)
     hourly_stats = hourly_stats.reset_index()
 
     if not hourly_stats.empty:
         best_hour = hourly_stats.loc[hourly_stats['Tỷ lệ %'].idxmax()]
-        st.info(f"💡 **Phát hiện:** Khung giờ **{int(best_hour['Hour'])}h** đạt tỷ lệ cuộc gọi dài cao nhất (**{best_hour['Tỷ lệ %']}%**).")
+        st.info(f"💡 **Thông tin:** Khung giờ **{int(best_hour['Hour'])}h** có tỷ lệ cuộc gọi chất lượng (>15p) cao nhất: **{best_hour['Tỷ lệ %']}%**.")
 
-    fig_time = px.line(hourly_stats, x='Hour', y='Tỷ lệ %', markers=True, 
-                       title="Biểu đồ tỷ lệ cuộc gọi chất lượng theo giờ")
+    fig_time = px.line(hourly_stats, x='Hour', y='Tỷ lệ %', markers=True, title="Biểu đồ tỷ lệ cuộc gọi dài theo khung giờ")
+    fig_time.update_traces(line_color='red')
     st.plotly_chart(fig_time, use_container_width=True)
 
     st.divider()
 
-    # --- 6. TOP CHAMPIONS ---
-    st.subheader("🏆 Vinh danh Top 3 Nhân viên xuất sắc")
-    report_staff = df_out.groupby('Staff_Name').agg(
-        Tổng_gọi=('Direction', 'count'),
-        Trên_15p=('Sec', lambda x: (x >= 900).sum())
-    ).reset_index()
+    # --- 7. BẢNG HIỆU SUẤT VÀ XUẤT BÁO CÁO (Sửa lỗi sắp xếp) ---
+    st.subheader("📊 Bảng dữ liệu chi tiết toàn bộ nhân viên")
     
-    c1, c2, c3 = st.columns(3)
-    top3 = report_staff.nlargest(3, 'Tổng_gọi')
-    # Hiển thị vinh danh
-    for i, (col, row) in enumerate(zip([c1, c2, c3], top3.itertuples()), 1):
-        col.metric(f"Top {i} Champion", row.Staff_Name, f"{row.Tổng_gọi} cuộc")
+    # Tạo bảng và dùng tên cột không dấu để sort an toàn
+    report_final = df_out.groupby('Staff_Name').agg(
+        Tong_goi=('Direction', 'count'),
+        Tren_15p=('Sec', lambda x: (x >= 900).sum())
+    ).reset_index()
 
-    st.divider()
-    st.subheader("📊 Bảng dữ liệu chi tiết")
-    st.dataframe(report_staff.sort_values('Trên_15p', ascending=False), use_container_width=True)
+    # Sắp xếp theo số cuộc gọi trên 15 phút
+    report_final = report_final.sort_values(by='Tren_15p', ascending=False)
+    
+    # Đổi tên cột hiển thị cho người dùng
+    report_final.columns = ['Nhân Viên', 'Tổng gọi', 'Trên 15 phút']
+    
+    st.dataframe(report_final, use_container_width=True)
+
+    # Nút tải báo cáo
+    csv = report_final.to_csv(index=False).encode('utf-8-sig')
+    st.download_button("📥 Tải Báo Cáo Tổng Hợp", data=csv, file_name='Bao_Cao_Henry_Team_Full.csv')

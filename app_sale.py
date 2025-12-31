@@ -4,9 +4,9 @@ import plotly.express as px
 import re
 
 # Cấu hình trang web
-st.set_page_config(page_title="Hệ thống Quản trị Henry Team", layout="wide")
+st.set_page_config(page_title="Thống kê Data Ringcentral - Dream Talent", layout="wide")
 
-st.title("🚀 Hệ thống Quản trị Sale & Chất lượng Data")
+st.title("🚀 Thống kê Data Ringcentral - Dream Talent")
 st.markdown("---")
 
 # --- 1. DANH SÁCH MÃ VÙNG ĐẦY ĐỦ (Full 50 States USA) ---

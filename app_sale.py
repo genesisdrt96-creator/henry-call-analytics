@@ -36,7 +36,7 @@ uploaded_file = st.file_uploader("📂 Kéo thả file CSV Call Log vào đây",
 
 if uploaded_file is not None:
     # Đọc dữ liệu
-   try:
+try:
     # Thử đọc với dấu phẩy, tự động bỏ qua dòng lỗi và phát hiện định dạng
     df = pd.read_csv(uploaded_file, sep=',', on_bad_lines='skip', low_memory=False)
 except:

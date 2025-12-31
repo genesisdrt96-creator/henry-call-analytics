@@ -94,7 +94,7 @@ if uploaded_file is not None:
 
     # --- 5.1 VINH DANH CHAMPIONS (TOP 3) ---
     st.divider()
-    st.subheader("🥇 Vinh danh Champions trong ngày")
+    st.subheader("🥇 Vinh danh Champions trong tháng")
     
     top_col1, top_col2 = st.columns(2)
     

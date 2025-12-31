@@ -31,18 +31,18 @@ def translate_desc(desc):
     if "hung up" in desc: return "Khách Dập Máy Sớm"
     return "Khác/Chưa xác định"
 
-# --- 2. TẢI FILE ---
-uploaded_file = st.file_uploader("📂 Kéo thả file CSV Call Log vào đây", type=["csv"])
+    # --- 2. TẢI FILE ---
+    uploaded_file = st.file_uploader("📂 Kéo thả file CSV Call Log vào đây", type=["csv"])
 
-if uploaded_file is not None:
-    # Đọc dữ liệu
-    try:
-        df = pd.read_csv(uploaded_file, sep=',', on_bad_lines='skip', low_memory=False)
-    except:
-        df = pd.read_csv(uploaded_file, sep=';', on_bad_lines='skip', low_memory=False)
-    
-    # Các dòng code phía dưới (df.drop_duplicates...) phải thẳng hàng với lệnh df ở trên
-    df = df.drop_duplicates().copy()
+    if uploaded_file is not None:
+        # Đọc dữ liệu
+        try:
+            df = pd.read_csv(uploaded_file, sep=',', on_bad_lines='skip', low_memory=False)
+        except:
+            df = pd.read_csv(uploaded_file, sep=';', on_bad_lines='skip', low_memory=False)
+        
+        # Các dòng phía dưới cũng phải THẲNG HÀNG với lệnh df ở trên
+        df = df.drop_duplicates().copy()
     
     # Xử lý cột Extension & Thời gian
     df[['Ext_Num', 'Staff_Name']] = df['Extension'].str.split(' - ', n=1, expand=True)

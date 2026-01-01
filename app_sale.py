@@ -118,7 +118,7 @@ if uploaded_file is not None:
             agent_total = agent_calls['Agent_Name'].value_counts().reset_index()
             agent_total.columns = ['Agent', 'Cuộc gọi']
             fig_pie_agent = px.pie(agent_total, values='Cuộc gọi', names='Agent', hole=0.4, 
-                                   title="Tỷ lệ lượt gọi vào Agent",
+                                   title="Tỷ lệ kết nối Agent",
                                    color_discrete_sequence=px.colors.sequential.Blues_r) # Blues_r là đậm -> nhạt
             st.plotly_chart(fig_pie_agent, use_container_width=True)
     else:

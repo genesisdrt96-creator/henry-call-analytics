@@ -77,12 +77,12 @@ if uploaded_file is not None:
     # --- 5. ĐỊA LÝ & VINH DANH ---
     col_geo, col_champ = st.columns([6, 4])
     with col_geo:
-        st.subheader("📍 Thống kê Địa lý (50 Tiểu bang USA)")
+        st.subheader("📍 Thống kê  50 Tiểu bang USA call nhiều nhất")
         fig_state = px.bar(state_counts.head(20), x='Bang', y='Count', color='Count', text_auto=True, color_continuous_scale='Portland')
         st.plotly_chart(fig_state, use_container_width=True)
 
     with col_champ:
-        st.subheader("🏆 Top 3 Champion (Sản lượng)")
+        st.subheader("🏆 Top 3 Coldcall The Most")
         top_staff = df_out.groupby('Staff_Name').size().nlargest(3).reset_index(name='Count')
         for i, row in enumerate(top_staff.itertuples(), 1):
             st.success(f"Hạng {i}: **{row.Staff_Name}** với **{row.Count}** cuộc")

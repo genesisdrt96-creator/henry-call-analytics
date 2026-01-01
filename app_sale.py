@@ -129,7 +129,7 @@ if uploaded_file is not None:
     # --- 6. ĐỊA LÝ & CHAMPIONS ---
     c_geo, c_champ = st.columns([6, 4])
     with c_geo:
-        st.subheader("📍 Thống kê 50 Tiểu bang USA")
+        st.subheader("📍 Thống kê cuộc phone trên 50 Tiểu bang USA")
         fig_s = px.bar(state_counts.head(20), x='Bang', y='Count', color='Count', text_auto=True, color_continuous_scale='Portland')
         st.plotly_chart(fig_s, use_container_width=True)
     with c_champ:

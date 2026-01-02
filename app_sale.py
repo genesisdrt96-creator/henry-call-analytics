@@ -109,7 +109,7 @@ if uploaded_file is not None:
         col_a1, col_a2 = st.columns([6, 4])
         with col_a1:
             fig_agent = px.bar(agent_stats, x='Agent_Name', y='Số lượng', color='Depth', 
-                               title="Sản lượng cuộc gọi Agent nhận được (Phân loại theo thời lượng)",
+                               title="Số lượng cuộc gọi Agent nhận được (Phân loại theo thời lượng)",
                                text_auto=True, barmode='stack',
                                color_discrete_sequence=custom_blues) # Áp dụng màu xanh
             st.plotly_chart(fig_agent, use_container_width=True)

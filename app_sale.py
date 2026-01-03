@@ -269,6 +269,18 @@ if uploaded_file is not None:
                 st.metric("⏰ Giờ Cao Điểm", f"{best_hour['Khung Giờ']}")
     except:
         st.error("Lỗi phân tích giờ.")
+        
+    st.markdown("---")
+    st.markdown("<h2 style='text-align: center; color: #EEEEEE;'>✨ THANK YOU! ✨</h2>", unsafe_allow_html=True)
+    
+    # Quotes gợi ý:
+    quote = "“Thành công không phải là cuối cùng, thất bại không phải là dấu chấm hết: lòng can đảm để tiếp tục mới là điều quan trọng nhất.”"
+    author = "— Winston Churchill"
+    
+    st.markdown(f"<p style='text-align: center; font-style: italic; font-size: 20px;'>{quote}</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align: center; font-weight: bold;'>{author}</p>", unsafe_allow_html=True)
+    
+    st.balloons() # Hiệu ứng bóng bay chúc mừng khi phân tích xong
 
 else:
     st.info("👋 Chào các Dreamer! Vui lòng tải file CSV.")

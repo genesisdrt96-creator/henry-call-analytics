@@ -75,15 +75,15 @@ AC_TO_STATE = {
 
 # --- 3. HÀM HỖ TRỢ ---
 def get_state(phone):
-    if pd.isna(phone): return "N/A (Trống)"
+    if pd.isna(phone): return "N/A"
     digits = re.sub(r'\D', '', str(phone))
     ac = None
     if len(digits) == 10: ac = digits[:3]
     elif len(digits) == 11 and digits.startswith('1'): ac = digits[1:4]
     if ac:
         state = AC_TO_STATE.get(ac)
-        return state if state else f"Mã mới ({ac})"
-    return "N/A"
+        return state if state else None
+    return None
 
 def to_seconds(s):
     if pd.isna(s) or str(s).lower() == 'in progress' or s == '-': return 0
@@ -143,9 +143,6 @@ if uploaded_file is not None:
     df_out = df[df['Direction'] == 'Outgoing'].copy()
     df_out['State'] = df_out['To'].apply(get_state)
     
-    state_counts = df_out['State'].value_counts().reset_index()
-    state_counts.columns = ['Bang', 'Count']
-
     # --- 5. TỔNG QUAN ---
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("📞 Tổng gọi đi", f"{len(df_out)}")
@@ -187,69 +184,150 @@ if uploaded_file is not None:
 
     st.divider()
 
-    # --- 8. ĐỊA LÝ & CHAMPIONS ---
-    c_geo, c_champ = st.columns([6, 4])
+   # --- 8. ĐỊA LÝ & CHAMPIONS (Hiển thị Toàn bộ 50 Tiểu Bang) ---
+    c_geo, c_champ = st.columns([7, 3])
+    
+    def format_k(n):
+        if n >= 1000:
+            return f"{n/1000:.1f}k" if n % 1000 != 0 else f"{int(n/1000)}k"
+        return str(n)
+
     with c_geo:
-        st.subheader("📍 Thống kê Tiểu bang USA")
-        geo_data = state_counts[~state_counts['Bang'].str.contains("N/A|Khác", na=False)].head(20)
-        st.plotly_chart(px.bar(geo_data, x='Bang', y='Count', color='Count', text_auto=True, color_continuous_scale='Portland'), use_container_width=True)
+        st.markdown("### 🗺️ Bản đồ Thị phần Toàn quốc (50 Tiểu bang)")
+        
+        # Lấy dữ liệu toàn bộ các bang có trong file
+        state_data_all = df_out['State'].dropna().value_counts().reset_index()
+        state_data_all.columns = ['State_Code', 'Count']
+        
+        # Danh sách các bang rất nhỏ (Không hiện chữ để tránh chồng chéo)
+        SMALL_STATES = ['RI', 'DE', 'CT', 'NJ', 'MD', 'MA', 'NH', 'VT', 'HI', 'DC', 'ME', 'WV']
+
+        # Logic tạo nhãn: Chỉ hiện chữ cho các bang lớn
+        state_data_all['Label'] = state_data_all.apply(
+            lambda r: f"{r['State_Code']}<br>{format_k(r['Count'])}" if r['State_Code'] not in SMALL_STATES else "", 
+            axis=1
+        )
+
+        # Dải màu Gradient Xanh từ Trắng -> Đậm
+        blue_gradient = [
+            [0.0, "#ffffff"], # Không có call
+            [0.1, "#f7fbff"], # Rất ít
+            [0.4, "#9ecae1"], # Trung bình
+            [0.7, "#2171b5"], # Cao
+            [1.0, "#08306b"]  # Cao nhất (Champion State)
+        ]
+
+        fig_map = px.choropleth(
+            state_data_all,
+            locations='State_Code',
+            locationmode="USA-states",
+            color='Count',
+            scope="usa",
+            color_continuous_scale=blue_gradient,
+            labels={'Count': 'Số lượng'}
+        )
+
+        # Hiển thị chữ lên các bang lớn
+        fig_map.add_scattergeo(
+            locations=state_data_all['State_Code'],
+            locationmode="USA-states",
+            text=state_data_all['Label'],
+            mode='text',
+            textfont=dict(
+                size=10, 
+                color="#1a1a1a", 
+                family="Verdana"
+            ),
+        )
+
+        fig_map.update_layout(
+            margin={"r":0,"t":0,"l":0,"b":0},
+            geo=dict(
+                bgcolor='rgba(0,0,0,0)',
+                projection_type='albers usa',
+                showlakes=True,
+                lakecolor='rgb(255, 255, 255)'
+            ),
+            dragmode=False # Khóa kéo bản đồ
+        )
+        
+        fig_map.update_coloraxes(showscale=True) 
+        
+        # Hiển thị bản đồ và khóa Zoom
+        st.plotly_chart(
+            fig_map, 
+            use_container_width=True, 
+            config={'scrollZoom': False, 'displayModeBar': False}
+        )
 
     with c_champ:
-        st.subheader("🏆 Vinh danh Chiến binh")
+        st.markdown("### 🏆 TOP 3 CHAMPION")
         top_s = df_out.groupby('Staff_Name').size().nlargest(3).reset_index(name='C')
+        
         for i, r in enumerate(top_s.itertuples(), 1):
-            if i == 1: st.success(f"🥇 Hạng {i}: **{r.Staff_Name}** — {r.C} cuộc")
-            elif i == 2: st.info(f"🥈 Hạng {i}: **{r.Staff_Name}** — {r.C} cuộc")
-            else: st.warning(f"🥉 Hạng {i}: **{r.Staff_Name}** — {r.C} cuộc")
+            val = format_k(r.C)
+            bg_color = "linear-gradient(90deg, #08306b, #2171b5)" if i==1 else ("linear-gradient(90deg, #4292c6, #9ecae1)" if i==2 else "linear-gradient(90deg, #c6dbef, #deebf7)")
+            text_color = "white" if i==1 else "#08306b"
+            st.markdown(f"""
+            <div style='background: {bg_color}; padding: 15px; border-radius: 10px; margin-bottom: 12px; color: {text_color}; border-left: 8px solid rgba(0,0,0,0.2);'>
+                <span style='font-family: Verdana; font-size: 18px;'><b>TOP {i}: {r.Staff_Name}</b></span><br>
+                <span style='font-family: Arial; font-size: 15px;'>Số lượng: {val}</span>
+            </div>
+            """, unsafe_allow_html=True)
 
-    st.divider()
-
-    # --- 9. BẢNG HIỆU SUẤT & BIỂU ĐỒ 4 THÔNG SỐ (PHẦN BẠN CẦN) ---
+        # --- 9. BẢNG HIỆU SUẤT CHI TIẾT ---
     st.subheader("📋 Bảng hiệu suất cuộc phone chi tiết từng nhân viên")
     
-    # 9a. Tạo dữ liệu báo cáo đầy đủ (Giữ nguyên các cột cũ trong bảng)
-    report = df_out.groupby('Staff_Name').agg(
+    # Tính toán báo cáo
+    # Cột 1: Kết nối Agent (Độc lập)
+    # Các cột tiếp theo: Thời lượng cuộc gọi chung (Độc lập)
+    report_raw = df_out.groupby('Staff_Name').agg(
         Tong_goi=('Direction', 'count'),
-        Lượt_Agent=('Agent_Name', 'count'),
-        Số_Sai=('Data_Health', lambda x: (x == "❌ Data sai (Wrong Num)").sum()),
-        Lỗi_KT=('Data_Health', lambda x: (x == "⚠️ Lỗi Kỹ thuật (Offline)").sum()),
-        Lop1=('Sec', lambda x: ((x > 0) & (x <= 10)).sum()),
-        Lop2=('Sec', lambda x: ((x > 10) & (x <= 30)).sum()),
-        Lop3=('Sec', lambda x: ((x > 30) & (x <= 60)).sum()),
-        Lop4=('Sec', lambda x: ((x > 60) & (x <= 300)).sum()),
-        Lop5=('Sec', lambda x: ((x > 300) & (x <= 600)).sum()),
-        Lop6=('Sec', lambda x: ((x > 600) & (x <= 1800)).sum()),
-        Lop7=('Sec', lambda x: (x > 1800).sum())
-    ).reset_index().sort_values('Lượt_Agent', ascending=False)
+        Agent_Conn=('Agent_Name', lambda x: x.notna().sum()), # Cột 1: Có bao nhiêu cuộc nối Agent
+        # Nhóm các cột thời lượng cho TOÀN BỘ cuộc gọi (không liên quan đến Agent)
+        Time_1_30s=('Sec', lambda x: ((x >= 1) & (x <= 30)).sum()),
+        Time_30s_1p=('Sec', lambda x: ((x > 30) & (x <= 60)).sum()),
+        Time_1_5p=('Sec', lambda x: ((x > 60) & (x <= 300)).sum()),
+        Time_5_10p=('Sec', lambda x: ((x > 300) & (x <= 600)).sum()),
+        Time_10_30p=('Sec', lambda x: ((x > 600) & (x <= 1800)).sum()),
+        Time_Over30p=('Sec', lambda x: (x > 1800).sum())
+    ).reset_index()
 
-    # 9b. Biểu đồ: CHỈ HIỂN THỊ 4 THÔNG SỐ (Tổng gọi, 5-10p, 10-30p, >30p)
-    staff_4_metrics = report.melt(id_vars='Staff_Name', 
-                                  value_vars=['Tong_goi', 'Lop5', 'Lop6', 'Lop7'], 
-                                  var_name='Metric', value_name='Số lượng')
-    
-    metric_name_map = {
-        'Tong_goi': '01. Tổng gọi đi',
-        'Lop5': '02. 5p - 10p',
-        'Lop6': '03. 10p - 30p',
-        'Lop7': '04. Trên 30p'
-    }
-    staff_4_metrics['Thông số'] = staff_4_metrics['Metric'].map(metric_name_map)
-
-    fig_4_metrics = px.bar(
-        staff_4_metrics, x='Staff_Name', y='Số lượng', color='Thông số',
-        title="Biểu đồ",
-        barmode='group', text_auto=True,
-        color_discrete_sequence=['#c6dbef', '#6baed6', '#2171b5', '#08306b']
+    # 9b. BIỂU ĐỒ TỔNG GỌI (Giữ nguyên giao diện xanh chuyên nghiệp)
+    fig_total_calls = px.bar(
+        report_raw.sort_values('Tong_goi', ascending=False), 
+        x='Staff_Name', y='Tong_goi',
+        title="Biểu đồ Tổng cuộc gọi theo nhân viên",
+        text_auto=True,
+        color='Tong_goi',
+        color_continuous_scale='Blues'
     )
-    st.plotly_chart(fig_4_metrics, use_container_width=True)
+    fig_total_calls.update_layout(showlegend=False, xaxis_title="Nhân viên", yaxis_title="Tổng cuộc gọi")
+    st.plotly_chart(fig_total_calls, use_container_width=True)
 
-    # 9c. Hiển thị bảng số liệu: GIỮ NGUYÊN ĐẦY ĐỦ CÁC CỘT NHƯ CŨ
-    report_table = report.copy()
-    report_table.columns = ['Nhân Viên', 'Tổng gọi', 'Kết Nối Agent', 'Số Sai', 'Lỗi KT', '0-10s', '10-30s', '30s-1m', '1m-5m', '5-10m', '10-30m', '>30m']
-    st.dataframe(report_table, use_container_width=True)
-    st.download_button("📥 Tải Báo Cáo", data=report_table.to_csv(index=False).encode('utf-8-sig'), file_name='Thong_Ke_Full_Dream_Talent.csv')
-
-    st.divider()
+    # 9c. BẢNG SỐ LIỆU HIỂN THỊ (Thiết kế lại theo đúng yêu cầu)
+    report_final = pd.DataFrame()
+    report_final['Nhân Viên'] = report_raw['Staff_Name']
+    report_final['Tổng call'] = report_raw['Tong_goi']
+    report_final['Kết nối Agent'] = report_raw['Agent_Conn'] # Cột 1 theo ý bạn
+    
+    # Các cột thời lượng riêng biệt
+    report_final['1 - 30s'] = report_raw['Time_1_30s']
+    report_final['30s - 1p'] = report_raw['Time_30s_1p']
+    report_final['1p - 5p'] = report_raw['Time_1_5p']
+    report_final['5p - 10p'] = report_raw['Time_5_10p']
+    report_final['10p - 30p'] = report_raw['Time_10_30p']
+    report_final['Trên 30p'] = report_raw['Time_Over30p']
+    
+    # Sắp xếp theo tổng gọi để dễ theo dõi
+    report_final = report_final.sort_values('Tổng call', ascending=False)
+    
+    # Hiển thị bảng dữ liệu
+    st.dataframe(report_final, use_container_width=True)
+    
+    # Nút tải báo cáo
+    csv = report_final.to_csv(index=False).encode('utf-8-sig')
+    st.download_button("📥 Tải Báo Cáo Tổng Hợp", data=csv, file_name='Bao_cao_Hieu_Suat_DreamTalent.csv')
 
     # --- 10. PHÂN TÍCH GIỜ VÀNG ---
     st.subheader("⏳ Phân tích Giờ Vàng (Cuộc gọi trên 30 phút)")
@@ -273,14 +351,10 @@ if uploaded_file is not None:
     st.markdown("---")
     st.markdown("<h2 style='text-align: center; color: #EEEEEE;'>✨ THANK YOU! ✨</h2>", unsafe_allow_html=True)
     
-    # Quotes gợi ý:
-    quote = "“Thành công không phải là cuối cùng, thất bại không phải là dấu chấm hết: lòng can đảm để tiếp tục mới là điều quan trọng nhất.”"
-    author = "— Winston Churchill"
+    st.markdown("<p style='text-align: center; font-style: italic; font-size: 20px;'>“Thành công không phải là cuối cùng, thất bại không phải là dấu chấm hết: lòng can đảm để tiếp tục mới là điều quan trọng nhất.”</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-weight: bold;'>— Winston Churchill</p>", unsafe_allow_html=True)
     
-    st.markdown(f"<p style='text-align: center; font-style: italic; font-size: 20px;'>{quote}</p>", unsafe_allow_html=True)
-    st.markdown(f"<p style='text-align: center; font-weight: bold;'>{author}</p>", unsafe_allow_html=True)
-    
-    st.balloons() # Hiệu ứng bóng bay chúc mừng khi phân tích xong
+    st.balloons() 
 
 else:
     st.info("👋 Chào các Dreamer! Vui lòng tải file CSV.")

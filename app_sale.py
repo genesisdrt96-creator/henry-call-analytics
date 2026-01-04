@@ -193,7 +193,7 @@ if uploaded_file is not None:
         return str(n)
 
     with c_geo:
-        st.markdown("### 🗺️ Bản đồ Thị phần Toàn quốc (50 Tiểu bang)")
+        st.markdown("### 🗺️ Bản đồ Mật độ Cuộc gọi trên Toàn bộ 50 Bang")
         
         # Lấy dữ liệu toàn bộ các bang có trong file
         state_data_all = df_out['State'].dropna().value_counts().reset_index()
